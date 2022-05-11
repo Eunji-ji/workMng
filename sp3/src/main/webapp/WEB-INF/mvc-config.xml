@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="
+	    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd">
+
+    <mvc:annotation-driven />
+
+    <!-- / 매핑에서 정적 리소스(html, css, js등)를 처리할수있도록 설정  -->
+	<mvc:default-servlet-handler/>
+
+	<context:component-scan base-package="com.sp" />
+
+    <!-- 트랜잭션 처리가 안되는 경우 mvc-config.xml 에 다음을 추가  -->
+    <aop:config proxy-target-class="true">
+	   <aop:pointcut id="controllerOperation" expression="execution(public * com.sp..*Controller.*(..))" />
+   </aop:config>
+
+	<!-- 타일즈 환경 설정 -->
+    <bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+       <property name="definitions">
+           <list>
+               <value>/WEB-INF/tiles-defs.xml</value>
+           </list>
+       </property>
+    </bean>
+     
+	<bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="order" value="1" />
+		<property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView" />
+		<property name="viewNames" value=".*" />
+	</bean>	
+	<bean id="viewResolver2" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="order" value="2" />
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/view/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- 파일 업로드 -->
+    <bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+         <!-- 자바파일이 UTF-8로 저장된 경우 한글파일명이 깨지지 않게하기 위해 -->
+         <property name="defaultEncoding" value="utf-8"/>
+         <property name="maxUploadSize" value="10485760" />
+    </bean>
+
+	<!-- Interceptor 설정. -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			
+			<!-- 제외 -->
+			<mvc:exclude-mapping path="/"/>
+			<mvc:exclude-mapping path="/main"/>
+			<mvc:exclude-mapping path="/resource/**"/>
+			<mvc:exclude-mapping path="/member/login"/>
+			<mvc:exclude-mapping path="/member/logout"/>
+			<mvc:exclude-mapping path="/member/member"/>
+			<mvc:exclude-mapping path="/member/userIdCheck"/>
+			<mvc:exclude-mapping path="/member/complete"/>
+			
+		
+			<bean class="com.sp.member.LoginCheckInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+ 
+ 
+    <!-- 예외처리 -->
+<!--     
+    <bean id="exceptionResolver"
+               class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="order" value="1" />
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">.error.fileuploadFailure</prop>
+                <prop key="org.springframework.dao.DataAccessException">.error.dataAccessFailure</prop>
+				<prop key="java.lang.Exception">.error.error</prop>
+            </props>
+        </property>
+        <property name="defaultErrorView" value=".error.error"/>
+    </bean>
+-->
+
+</beans>

@@ -1,0 +1,19 @@
+﻿@charset "UTF-8";
+
+.boardTitle {
+	font-weight: bold;
+	font-size: 13pt;
+	margin-bottom:10px;
+	color: #636262;
+	font-family: 나눔고딕, "맑은 고딕", 돋움, sans-serif;
+	list-style: none;
+	width: 45%;
+	height: 200px;
+	margin: 6px;
+	float: left;
+}
+
+
+.leftPadding{
+	padding-left: 9px;
+}

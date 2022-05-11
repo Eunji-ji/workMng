@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+	<select id="loginMember" parameterType="String" resultType="com.sp.member.Member">
+		SELECT memberIdx, userId, userName, userPwd, created_date, modify_date
+		FROM member1
+		WHERE userId = #{userId} AND enabled != 0
+	</select>
+	
+	<update id="updateLastLogin" parameterType="String">
+		UPDATE  member1 SET last_login = SYSDATE
+		WHERE userId=#{userId}
+	</update>
+	
+    <select id="memberSeq" resultType="Long">
+       SELECT member_seq.NEXTVAL FROM dual 
+    </select>
+
+    <insert id="insertMember" parameterType="Long">
+       INSERT INTO member(memberIdx, membership) VALUES (#{memberIdx}, 1) 
+    </insert>
+
+    <insert id="insertMember1" parameterType="com.sp.member.Member">
+       INSERT INTO member1(memberIdx, userId, userName, userPwd, enabled, created_date, modify_date) VALUES
+                 (#{memberIdx}, #{userId}, #{userName}, #{userPwd}, 1, SYSDATE, SYSDATE, SYSDATE) 
+    </insert>
+
+    <insert id="insertMember2" parameterType="com.sp.member.Member">
+       INSERT INTO member2
+            (userId, birth, email, tel, zip, addr1, addr2)  VALUES 
+            (#{userId}, #{birth}, #{email}, #{tel}, 
+                    #{zip, jdbcType=VARCHAR}, #{addr1, jdbcType=VARCHAR}, 
+                    #{addr2, jdbcType=VARCHAR})
+    </insert>
+
+<!-- insert all 을 이용하여 추가할 때는 <update> 태그 이용해야 함  -->	
+    <update id="insertMember12" parameterType="com.sp.member.Member">
+       INSERT ALL
+           INTO member1(memberIdx, userId, userName, userPwd, enabled, created_date,
+                        modify_date)
+                VALUES (#{memberIdx}, #{userId}, #{userName}, #{userPwd}, 1, SYSDATE, SYSDATE)
+           INTO member2(userId, birth, email, tel, zip, addr1, addr2)
+                VALUES (#{userId}, #{birth}, #{email}, #{tel}, 
+                        #{zip, jdbcType=VARCHAR}, #{addr1, jdbcType=VARCHAR}, 
+                        #{addr2, jdbcType=VARCHAR})
+            SELECT * FROM dual     
+    </update>
+	
+	<select id="readMember" parameterType="String" resultType="com.sp.member.Member">
+		SELECT memberIdx, m1.userId, userName, userPwd, enabled, created_date, modify_date		            ,TO_CHAR(birth, 'YYYY-MM-DD') birth, email, tel, zip, addr1, addr2
+		FROM member1 m1
+		LEFT OUTER JOIN member2 m2 ON m1.userId = m2.userId
+		WHERE m1.userId = #{userId}
+	</select>
+
+	<select id="readMember2" parameterType="String" resultType="com.sp.member.Member">
+		SELECT m.memberIdx, membership, NVL(m1.userId, 'guest') userId, NVL(userName, '손님') userName, userPwd, enabled, created_date, modify_date
+		            ,TO_CHAR(birth, 'YYYY-MM-DD') birth, email, tel, zip, addr1, addr2
+		FROM member m
+		LEFT OUTER JOIN member1 m1 ON m.memberIdx = m1.memberIdx
+		LEFT OUTER JOIN member2 m2 ON m1.userId = m2.userId
+		WHERE m.memberIdx = #{memberIdx}
+	</select>
+	
+    <!-- 회원정보 수정  --> 
+    <update id="updateMembership" parameterType="map">
+        UPDATE member SET membership = #{membership}
+               WHERE memberIdx=#{memberIdx}
+    </update>
+
+    <update id="updateMemberEnabled" parameterType="map">
+        UPDATE member1 SET enabled=#{enabled} WHERE userId=#{userId}
+    </update>
+    
+    <update id="updateMember1" parameterType="com.sp.member.Member">
+        UPDATE member1 SET userPwd=#{userPwd}, modify_date=SYSDATE
+               WHERE userId=#{userId}
+    </update>
+	
+    <update id="updateMember2" parameterType="com.sp.member.Member">
+        UPDATE member2 SET email=#{email, jdbcType=VARCHAR}, 
+                     tel=#{tel, jdbcType=VARCHAR}, birth=#{birth, jdbcType=VARCHAR},
+                     zip=#{zip, jdbcType=VARCHAR},
+                     addr1=#{addr1, jdbcType=VARCHAR}, addr2=#{addr2, jdbcType=VARCHAR}
+               WHERE userId=#{userId}
+    </update>
+
+    <!-- member 테이블 정보 삭제  -->    
+    <delete id="deleteMember1" parameterType="String">
+    	DELETE FROM member1 WHERE userId=#{userId}
+    </delete>
+    
+    <delete id="deleteMember2" parameterType="String">
+    	DELETE FROM member2 WHERE userId=#{userId}
+    </delete>
+	
+</mapper>

@@ -1,0 +1,103 @@
+﻿@charset "UTF-8";
+
+* {
+	margin:0; padding:0;
+}
+
+body {
+	font-family:"Malgun Gothic", "맑은 고딕", NanumGothic, 나눔고딕, 돋움, sans-serif;
+	font-size: 14px;
+	/*line-height: 1.42857143;*/
+}
+
+a {
+	cursor: pointer;
+	color: #000000;
+	text-decoration: none;
+	/*line-height: 150%;*/
+}
+a:hover, a:active {
+	color: #F28011;
+	text-decoration: underline;
+}
+
+.btn {
+	color:#333333;
+	font-weight:500;
+	border:1px solid #cccccc;
+	background-color:#ffffff;
+	text-align:center;
+	cursor:pointer;
+	padding:3px 10px 5px;
+	border-radius:4px;
+	font-family:"Malgun Gothic", "맑은 고딕", NanumGothic, 나눔고딕, 돋움, sans-serif;
+}
+.btn:active, .btn:focus, .btn:hover {
+	background-color:#e6e6e6;
+	border-color: #adadad;
+	color: #333333;
+}
+.btn[disabled], fieldset[disabled] .btn {
+	pointer-events: none;
+	cursor: not-allowed;
+	filter: alpha(opacity=65);
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	opacity: .65;
+}
+
+.btnConfirm {
+	font-size: 15px; 
+	border:none;
+	color:#ffffff;
+	background:#507CD1;
+	width: 360px;
+	height: 50px;
+	line-height: 50px;
+	border-radius:4px;
+}
+
+.messageBox {
+	margin-top: 20px;
+	width: 420px; min-height: 150px;
+	line-height: 100px;
+	border: 1px solid #DAD9FF;
+	padding: 5px;
+	color:#333333;
+	font-size:14px;
+	text-align: center;
+	border-radius:4px;
+}
+
+textarea:focus, input:focus{
+	outline: none;
+}
+
+.boxTF {
+	border:1px solid #999999;
+	padding:3px 5px 5px;
+	border-radius:4px;
+	background-color:#ffffff;
+	font-family:"Malgun Gothic", "맑은 고딕", NanumGothic, 나눔고딕, 돋움, sans-serif;
+}
+.boxTF[readonly] {
+	background-color:#eeeeee;
+	/* border: none;*/
+}
+
+.selectField {
+	border:1px solid #999999;
+	padding:2px 5px 4px;
+	border-radius:4px;
+	font-family:"Malgun Gothic", "맑은 고딕", NanumGothic, 나눔고딕, 돋움, sans-serif;
+}
+
+.boxTA {
+	border:1px solid #999999;
+	height:150px;
+	padding:3px 5px;
+	resize : none;  /* 크롬등 크기 고정 */
+	border-radius:4px;
+	background-color:#ffffff;
+	font-family:"Malgun Gothic", "맑은 고딕", NanumGothic, 나눔고딕, 돋움, sans-serif;
+}
