@@ -16,24 +16,74 @@
 <style type="text/css">
 </style>
 <script type="text/javascript" >
-$(document).ready(function(){  
-	var xhr = new XMLHttpRequest();
-	var url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson'; /*URL*/
-	var queryParams = '?' + encodeURIComponent('serviceKey') + '='+ encodeURIComponent('oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D'); /*Service Key*/
-	queryParams += '&' + encodeURIComponent('pageNo') + '=' + encodeURIComponent('1'); /**/
-	queryParams += '&' + encodeURIComponent('numOfRows') + '=' + encodeURIComponent('10'); /**/
-	queryParams += '&' + encodeURIComponent('startCreateDt') + '=' + encodeURIComponent('20220501'); /**/
-	queryParams += '&' + encodeURIComponent('endCreateDt') + '=' + encodeURIComponent('20220501'); /**/
-	xhr.open('GET', url + queryParams);
-	xhr.onreadystatechange = function () {
-	    if (this.readyState == 4) {
-	        alert('Status: '+this.status+'nHeaders: '+JSON.stringify(this.getAllResponseHeaders())+'nBody: '+this.responseText);
-	    }
-	};
-	xhr.send('');
-	console.log(encodeURIComponent('oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D'));
-	console.log(this.responseText);
+$(document).ready(function(){
+	var url1 ="<%=cp%>/workMng/getWeatherData";
+	ajaxJSON(url1,"post", "W");
+	
+	var url2 ="<%=cp%>/workMng/getCovidData";
+	ajaxJSON(url2,"post", "C");
 });
+
+function ajaxJSON(url, method, div) {
+	$.ajax({
+		type:method,
+		url:url,
+		//data,
+		dataType:"json",
+		success:function(data) {
+				if(div = "W"){
+					console.log("w : " +data.result);
+					if(data.result == 'success'){
+						if(data.tmperature != null && data.tmperature != ""){
+							var tmp = Number(data.tmperature);
+							if(tmp < 10){
+								$("#tmperature").css("color", "#46A8ED");
+							}else if(tmp > 26){
+								$("#tmperature").css("color", "#F46A2D");
+							}
+							$("#tmperature").text(tmp + "℃");
+							style="color: #F1C208;"
+						}
+						if(data.rain != null && data.rain != ""){
+							var rain = "";
+							if(data.rain == "0"){
+								rain = "비가 오지 않음";
+								$("#rain").css("color", "#F1C208");
+							}else if(data.rain == "2"){
+								rain = "눈/비"
+							}else if(data.rain == "4"){
+								rain = "소나기"
+							}else{
+								rain = "비"
+							}
+							$("#rain").text(rain);
+						}
+				}else{
+					$("#wMsg").text("현재 날씨 정보를 불러올 수 없습니다.");
+				}
+			}else{
+				console.log("c : " +data.result);
+				if(data.result == 'success'){
+					console.log("c : " +data.decideCnt);
+					$("#covid").text(data.decideCnt);
+				}else{
+					$("#cMsg").text("현재 코로나19 관련 정보를 불러올 수 없습니다.");
+				}
+			}
+		},
+		beforeSend:function(jqXHR) {
+			jqXHR.setRequestHeader("AJAX", true);
+		},
+		error:function(jqXHR) {
+			if(jqXHR.state==403) {
+				login();
+				return false;
+			}
+			
+			console.log(jqXHR.responseText);
+		}
+	});
+}
 </script>
 
 <body>
@@ -59,14 +109,16 @@ $(document).ready(function(){
 		<ul>
 			<li class="boardTitle">
 			   |  <span class="leftPadding">  WEATHER </span>
-			   <p>${weather}<p>
+			   <p id="tmperature" style="color: #FAD82C; padding-top: 15px;"> </p> 
+			   <p id="rain" style="color: #399DCC"> </p> 
+			   <p id="wMsg"> </p>
 			</li>
 		</ul>
 		<ul>
 			<li class="boardTitle" style="float: none;">
 			   |  <span class="leftPadding">  COVID-19	${covid}</span>
-			   	  <p>${covid}<p>
-			   	<button onclick="test();">test</button>
+			   	  <p id="covidInfo"> <p>
+				  <p id="cMsg"> </p>
 			</li>
 		</ul>
 	</div>

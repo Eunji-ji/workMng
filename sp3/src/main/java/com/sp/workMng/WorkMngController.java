@@ -7,24 +7,34 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 
 @Controller("workMng.workMngController")
 @RequestMapping("/workMng/*")
 public class WorkMngController {
 	
 	@RequestMapping(value="dashboard")
-	public String method(Model model) {
+	public String method() {
 		// 화면 로드시 공공 api 데이터 가져오기  
-		model.addAttribute("covid", getCovidData()); // 코로나 
-		model.addAttribute("weather", getWeatherData()); // 날씨
 		return ".workMng.dashboard";
 	}
 
@@ -41,18 +51,37 @@ public class WorkMngController {
 	}
 
 	// 현재 시간 '0-24 시간 형태'
-	public String getNowTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("hh");
+	public String getNowTime(String divCd) {
+        SimpleDateFormat sdf = new SimpleDateFormat("hhmm");
         Calendar cal = Calendar.getInstance();
+
+        if(divCd.equals("Y")) {
+        	cal.add(Calendar.HOUR, +6);
+        }
+        
         String day = sdf.format(cal.getTime());
         return day;
 	}
 	
+	// xml 파싱 태그명 가져오기 
+	public String getTagValue(String tag, Element eElement) {
+		NodeList nList = eElement.getElementsByTagName(tag).item(0).getChildNodes();
+		Node nValue = (Node)nList.item(0);
+		if(nValue == null) {
+			return null;
+		}
+		return nValue.getNodeValue();
+	}
+	
 	// 코로나 정보 API
-	public String getCovidData() {
+	@RequestMapping(value="getCovidData", method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String, String> getCovidData() {
 		StringBuilder sb = new StringBuilder();
+		Map<String, String> covidMap = new HashMap<>();
+		
 		try {
-			
+			boolean dataNullChk = false;
 	        StringBuilder urlBuilder = new StringBuilder("http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson"); /*URL*/
 	        String serviceKey = "=oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D";
 	        
@@ -76,23 +105,45 @@ public class WorkMngController {
 	            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	        } else {
 	            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+	            dataNullChk = true;
+	            covidMap.put("result", "fail");
 	        }
+	        
+	        if( ! dataNullChk ) {
+		        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		        Document document = (Document) documentBuilder.parse(new InputSource(conn.getInputStream()));
 
-	        String line;
-	        while ((line = rd.readLine()) != null) {
-	            sb.append(line);
+		        document.getDocumentElement().normalize();
+		        
+		        System.out.println(document.getDocumentElement().getNodeName());
+		        NodeList nList = document.getElementsByTagName("item");
+	        	System.out.println(nList);
+		        
+		        for(int i=0; i<nList.getLength(); i++) {
+		        	Node itemNode = nList.item(i);
+		        	if(itemNode.getNodeType() == Node.ELEMENT_NODE) {
+		        		Element eElement = (Element) itemNode;
+		        		covidMap.put("decideCnt", getTagValue("decideCnt", eElement));
+			        	System.out.println(eElement);
+		        	}
+		        	
+		        }
+		        covidMap.put("result", "success");
 	        }
 	        rd.close();
 	        conn.disconnect();
-	        System.out.println(sb.toString());
 		}catch (Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
-		return sb.toString();
+		return covidMap;
 	}
 	
+	
 	// 날씨 API
+	@RequestMapping(value="getWeatherData", method=RequestMethod.POST)
+	@ResponseBody
 	public Map<String, String> getWeatherData() {
 		
 		StringBuilder sb = new StringBuilder();
@@ -101,7 +152,23 @@ public class WorkMngController {
 		try {
 		    
 		    String serviceKey = "=oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D";
-		    String day = getdate("Y");
+		    String day = getdate("T");
+		    String nowTime = getNowTime("T");
+
+	        SimpleDateFormat sdf = new SimpleDateFormat("kk");
+	        Date date1 = sdf.parse("24"); 
+	        
+	        Calendar cal = Calendar.getInstance();
+	        Calendar nowCal = Calendar.getInstance();
+	        cal.setTime(date1);
+	        
+	        System.out.println(nowCal.after(cal));
+	        if(nowCal.after(cal)) {
+	        	day = getdate("Y");
+	        	nowTime = getNowTime("Y");
+	        }
+		    	
+		    boolean dataNullChk = false;
 	        
 	        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst"); /*URL*/
 	        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + serviceKey); /*Service Key*/
@@ -109,7 +176,7 @@ public class WorkMngController {
 	        urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("1000", "UTF-8")); /*한 페이지 결과 수*/
 	        urlBuilder.append("&" + URLEncoder.encode("dataType","UTF-8") + "=" + URLEncoder.encode("JSON", "UTF-8")); /*요청자료형식(XML/JSON) Default: XML*/
 	        urlBuilder.append("&" + URLEncoder.encode("base_date","UTF-8") + "=" + URLEncoder.encode(day, "UTF-8")); /*‘21년 6월 28일 발표*/
-	        urlBuilder.append("&" + URLEncoder.encode("base_time","UTF-8") + "=" + URLEncoder.encode("0600", "UTF-8")); /*06시 발표(정시단위) */
+	        urlBuilder.append("&" + URLEncoder.encode("base_time","UTF-8") + "=" + URLEncoder.encode(nowTime, "UTF-8")); /*06시 발표(정시단위) */
 	        urlBuilder.append("&" + URLEncoder.encode("nx","UTF-8") + "=" + URLEncoder.encode("55", "UTF-8")); /*예보지점의 X 좌표값*/
 	        urlBuilder.append("&" + URLEncoder.encode("ny","UTF-8") + "=" + URLEncoder.encode("127", "UTF-8")); /*예보지점의 Y 좌표값*/
 	        
@@ -124,67 +191,69 @@ public class WorkMngController {
 	            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 	        } else {
 	            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+	        	dataNullChk = true;
+	        	weatherMap.put("result", "fail");
 	        }
 	        String line;
 	        while ((line = rd.readLine()) != null) {
-	            sb.append(line);
+	        	sb.append(line);
+		        System.out.println(sb.toString());
 	        }
+
 	        rd.close();
 	        conn.disconnect();
-	        System.out.println(sb.toString());
 	        
-	        // response 키를 가지고 데이터를 파싱
-	        JSONObject jsonObj_1 = new JSONObject(sb.toString());
-	        JSONObject response = jsonObj_1.getJSONObject("response");
-	        
-	        System.out.println(response);
-	        
-	        // response 로 부터 body 찾기
-	        JSONObject jsonObj_2 = new JSONObject(response);
-	        JSONObject body = jsonObj_2.getJSONObject("body");
-
-	        // body 로 부터 items 찾기
-	        JSONObject jsonObj_3 = new JSONObject(body);
-	        JSONObject items = jsonObj_3.getJSONObject("items");
-
-	        // items로 부터 itemlist 를 받기 
-	        JSONObject jsonObj_4 = new JSONObject(items);
-	        JSONArray jsonArray = jsonObj_4.getJSONArray("item");
-
-	        for(int i=0;i<jsonArray.length();i++){
-	            jsonObj_4 = jsonArray.getJSONObject(i);
-	            String category = jsonObj_4.getString("category");
-	            String obsrValue = jsonObj_4.getString("obsrValue");
-	            String weather = "";
-
-	            if(category.equals("SKY")){
-	                if(obsrValue.equals("1")) {
-	                    weather += "맑음";
-	                }else if(obsrValue.equals("2")) {
-	                    weather += "비";
-	                }else if(obsrValue.equals("3")) {
-	                    weather += "구름이 많음";
-	                }else if(obsrValue.equals("4")) {
-	                    weather += "흐림 ";
-	                }
-	                weatherMap.put("weather", weather);
-	                System.out.println("weather : " + weather);
-	            }
-
-	            if(category.equals("T1H")){
-	            	weatherMap.put("tmperature", obsrValue);
-	                System.out.println("tmperature : " + obsrValue);
-	            }
-	            
-	            if(category.equals("PTY")){
-	            	weatherMap.put("rain", obsrValue);
-	            	System.out.println("rain : " + obsrValue);
-	            }
+	        if(! dataNullChk ) {
+		        JSONParser jsonParser = new JSONParser();
+		        JSONObject jsonObject = (JSONObject) jsonParser.parse(sb.toString());
+		        JSONObject jsonObject_res = (JSONObject) jsonObject.get("response");
+		        JSONObject jsonObject_body = (JSONObject) jsonObject_res.get("body");
+		        JSONObject jsonObject_items = (JSONObject) jsonObject_body.get("items");
+	
+		        JSONArray jsonArr = (JSONArray) jsonObject_items.get("item");
+		        	
+		       
+		        for(int i=0; i<jsonArr.size(); i++) {
+		        	JSONObject item = (JSONObject) jsonArr.get(i);
+		            String category = (String)item.get("category");
+		            String weather = "";
+		            String obsrValue = "";
+		            
+		            if(category.equals("SKY")){
+		            	obsrValue = (String)item.get("obsrValue");
+		                if(obsrValue.equals("1")) {
+		                    weather += "맑음";
+		                }else if(obsrValue.equals("2")) {
+		                    weather += "비";
+		                }else if(obsrValue.equals("3")) {
+		                    weather += "구름이 많음";
+		                }else if(obsrValue.equals("4")) {
+		                    weather += "흐림 ";
+		                }
+		                weatherMap.put("weather", weather);
+		                System.out.println("weather : " + weather);
+		            }
+	
+		            if(category.equals("T1H")){
+		            	obsrValue = (String)item.get("obsrValue");
+		            	weatherMap.put("tmperature", obsrValue);
+		                System.out.println("tmperature : " + obsrValue);
+		            }
+		            
+		            if(category.equals("PTY")){
+		            	obsrValue = (String)item.get("obsrValue");
+		            	weatherMap.put("rain", obsrValue);
+		            	System.out.println("rain : " + obsrValue);
+		            }
+		        }
+	        	weatherMap.put("result", "success");
 	        }
+
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
+		
 		return weatherMap;
 	}
 }
