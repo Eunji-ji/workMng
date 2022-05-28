@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,7 +32,6 @@ import org.xml.sax.InputSource;
 @Controller("workMng.workMngController")
 @RequestMapping("/workMng/*")
 public class WorkMngController {
-	
 	@RequestMapping(value="dashboard")
 	public String method() {
 		// 화면 로드시 공공 api 데이터 가져오기  
@@ -77,11 +77,9 @@ public class WorkMngController {
 	@RequestMapping(value="getCovidData", method=RequestMethod.POST)
 	@ResponseBody
 	public Map<String, String> getCovidData() {
-		StringBuilder sb = new StringBuilder();
 		Map<String, String> covidMap = new HashMap<>();
 		
 		try {
-			boolean dataNullChk = false;
 	        StringBuilder urlBuilder = new StringBuilder("http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson"); /*URL*/
 	        String serviceKey = "=oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D";
 	        
@@ -92,54 +90,35 @@ public class WorkMngController {
 	        String yesterday = getdate("Y");
 	        urlBuilder.append("&" + URLEncoder.encode("startCreateDt","UTF-8") + "=" + URLEncoder.encode(yesterday, "UTF-8")); /*검색할 생성일 범위의 시작*/
 	        urlBuilder.append("&" + URLEncoder.encode("endCreateDt","UTF-8") + "=" + URLEncoder.encode(yesterday, "UTF-8")); /*검색할 생성일 범위의 종료*/
-	        
-	        System.out.println(urlBuilder.toString());
-	        URL url = new URL(urlBuilder.toString());
-	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	        conn.setRequestMethod("GET");
-	        conn.setRequestProperty("Content-type", "application/json");
 
-	        System.out.println("Response code: " + conn.getResponseCode());
-	        BufferedReader rd;
-	        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-	            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-	        } else {
-	            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-	            dataNullChk = true;
-	            covidMap.put("result", "fail");
+	        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+	        Document document = (Document) documentBuilder.parse(urlBuilder.toString());
+
+	        document.getDocumentElement().normalize();
+	        NodeList nList = document.getElementsByTagName("item");
+	        
+	        for(int i=0; i<nList.getLength(); i++) {
+	        	Node itemNode = nList.item(i);
+	        	if(itemNode.getNodeType() == Node.ELEMENT_NODE) {
+	        		Element eElement = (Element) itemNode;
+	        		System.out.println("확진자수  : " + getTagValue("decideCnt", eElement));
+	        		System.out.println("기준일자  : " + getTagValue("stateDt", eElement));
+	        		System.out.println("기준시간  : " + getTagValue("stateTime", eElement));
+	        		
+	    	        covidMap.put("decideCnt", getTagValue("decideCnt", eElement)); // 확진자수
+	    	        covidMap.put("stateDt", getTagValue("stateDt", eElement)); // 기준일자
+	    	        covidMap.put("stateTime", getTagValue("stateTime", eElement)); // 기준시간
+	        	}
 	        }
 	        
-	        if( ! dataNullChk ) {
-		        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-		        Document document = (Document) documentBuilder.parse(new InputSource(conn.getInputStream()));
-
-		        document.getDocumentElement().normalize();
-		        
-		        System.out.println(document.getDocumentElement().getNodeName());
-		        NodeList nList = document.getElementsByTagName("item");
-	        	System.out.println(nList);
-		        
-		        for(int i=0; i<nList.getLength(); i++) {
-		        	Node itemNode = nList.item(i);
-		        	if(itemNode.getNodeType() == Node.ELEMENT_NODE) {
-		        		Element eElement = (Element) itemNode;
-		        		covidMap.put("decideCnt", getTagValue("decideCnt", eElement));
-			        	System.out.println(eElement);
-		        	}
-		        	
-		        }
-		        covidMap.put("result", "success");
-	        }
-	        rd.close();
-	        conn.disconnect();
+	        covidMap.put("result", "success");
 		}catch (Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 		return covidMap;
 	}
-	
 	
 	// 날씨 API
 	@RequestMapping(value="getWeatherData", method=RequestMethod.POST)
