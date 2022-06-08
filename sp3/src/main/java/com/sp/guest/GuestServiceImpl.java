@@ -28,7 +28,7 @@ public class GuestServiceImpl implements GuestService{
 		List<Guest> list=null;
 		
 		try{
-			list=dao.selectList("guest.listGuest", map);
+			list=dao.selectList("dashboard.selectTodoList", map);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

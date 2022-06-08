@@ -10,18 +10,32 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
-
+	
 <link rel="stylesheet" href="<%=cp%>/resource/css/style.css" type="text/css">
 <link rel="stylesheet" href="<%=cp%>/resource/css/dashboard.css" type="text/css">
+<link href='http://www.openhiun.com/hangul/nanumbarungothic.css' rel='stylesheet' type='text/css'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style type="text/css">
+body {
+  font-family: 'Nanum Barun Gothic', sans-serif;
+}
 </style>
 <script type="text/javascript" >
 $(document).ready(function(){
+	// 날씨 api
 	var url1 ="<%=cp%>/workMng/getWeatherData";
 	ajaxJSON(url1,"post", "W");
 	
+	// 코로나 api 
 	var url2 ="<%=cp%>/workMng/getCovidData";
 	ajaxJSON(url2,"post", "C");
+	
+	// list 출력 
+	var url3 ="<%=cp%>/workMng/selectList";
+	ajaxJSON(url3,"post", "L");
+
 });
 
 function ajaxJSON(url, method, div) {
@@ -31,8 +45,8 @@ function ajaxJSON(url, method, div) {
 		//data,
 		dataType:"json",
 		success:function(data) {
-				if(div = "W"){
-					console.log("w : " +data.result);
+				if(div === "W"){
+					console.log("W : " +data.result);
 					if(data.result == 'success'){
 						if(data.tmperature != null && data.tmperature != ""){
 							var tmp = Number(data.tmperature);
@@ -58,18 +72,36 @@ function ajaxJSON(url, method, div) {
 							}
 							$("#rain").text(rain);
 						}
-				}else{
-					$("#wMsg").text("현재 날씨 정보를 불러올 수 없습니다.");
+					}else{
+						$("#wMsg").text("현재 날씨 정보를 불러올 수 없습니다.");
+					}
 				}
-			}else{
-				console.log("c : " +data.result);
-				if(data.result == 'success'){
-					console.log("c : " +data.decideCnt);
-					$("#covid").text(data.decideCnt);
-				}else{
-					$("#cMsg").text("현재 코로나19 관련 정보를 불러올 수 없습니다.");
+				if(div === "C"){
+					console.log("C : " +data.result);
+					if(data.result == 'success'){
+						var todayCount = setTodayCovidData(data);
+						$("#covidInfo").text('총 확진자 : ' + data.decideCnt);
+						$("#todayCount").text('( + ' + todayCount + ' )');
+					}else{
+						$("#cMsg").text("현재 코로나19 관련 정보를 불러올 수 없습니다.");
+					}
 				}
-			}
+				if(div === "L"){
+					if(data.todoList != null){
+						var todoList = data.todoList;
+						selectTodoList(todoList);
+					}
+					
+					if(data.planList != null){
+						var planList = data.planList;
+						selectPlanList(planList);
+					}
+					
+					if(data.memoList != null){
+						var memoList = data.memoList;
+						selectMemoList(memoList);
+					}
+				}
 		},
 		beforeSend:function(jqXHR) {
 			jqXHR.setRequestHeader("AJAX", true);
@@ -84,6 +116,52 @@ function ajaxJSON(url, method, div) {
 		}
 	});
 }
+
+function setTodayCovidData(data){
+	return Number(data.decideCnt) - Number(data.beforeDecideCnt);
+}
+
+function selectTodoList(todoList){
+	var html = '';
+	for(var i=0; i<todoList.length; i++){
+		var data = todoList[i];
+		html += '<tr>';
+		html += '<td style="display: none;">' + data.toDoNum + '</td>';
+		html += '<td style="padding-right: 5px;"> <input type="checkbox" id='+data.toDoNum+'> </td>';
+		html += '<td>' + data.todoCreatDt + '</td>';
+		html += '<td>' + data.todoSubject + '</td>';
+		html += "</tr>";	
+	}
+	$("#todoListTb").append(html);
+}
+
+function selectPlanList(planList){
+	var html = '';
+	for(var i=0; i<planList.length; i++){
+		var data = planList[i];
+		html += '<tr>';
+		html += '<td style="display: none;">' + data.planNum + '</td>';
+		html += '<td>' + data.planCreatDt + '</td>';
+		html += '<td style="color: #3799F3; padding: 0 5px">' + data.planTm + '</td>';
+		html += '<td>' + data.planSubject + '</td>';
+		html += "</tr>";
+	}
+	console.log(html);
+	$("#planListTb").append(html);
+}
+
+function selectMemoList(memoList){
+	var html = '';
+	for(var i=0; i<memoList.length; i++){
+		var data = memoList[i];
+		html += '<tr>';
+		html += '<td style="display: none;">' + data.memoNum + '</td>';
+		html += '<td>' + data.memoCreatDt + '</td>';
+		html += '<td>' + data.memoSubject + '</td>';
+		html += "</tr>";
+	}
+	$("#memoListTb").append(html);
+}
 </script>
 
 <body>
@@ -91,34 +169,52 @@ function ajaxJSON(url, method, div) {
 	<div style="width: 60%; height: 100%; float: left;">
 		<ul>
 			<li class="boardTitle">
-			   | <span class="leftPadding"> TO DO LIST</span>
+			   <span class="leftPadding"> TO DO LIST</span>
+				<div id="todoList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
+					<table class="table">
+						<tbody id="todoListTb">
+						</tbody>
+					</table>
+				</div>
 			</li>
 		</ul>
 		<ul>
 			<li class="boardTitle">
-			   |  <span class="leftPadding">  MEMO </span>
+			    <span class="leftPadding">  MEMO </span>
+				<div id="memoList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
+					<table class="table">
+						<tbody id="memoListTb">
+						</tbody>
+					</table>
+				</div>
 			</li>
 		</ul>
 		<ul>
 			<li class="boardTitle" style="width: 90%">
-			   | <span class="leftPadding">  TODAY PLAN </span>
+			    <span class="leftPadding">  TODAY PLAN </span>
+				<div id="planList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
+					<table class="table">
+						<tbody id="planListTb">
+						</tbody>
+					</table>
+				</div>
 			</li>
 		</ul>
 	</div>
 	<div style="width: 40%; height: 100%; float: left;">
 		<ul>
-			<li class="boardTitle">
-			   |  <span class="leftPadding">  WEATHER </span>
+			<li class="boardTitle" style="min-width: 340px;">
+			     <span class="leftPadding">  WEATHER </span>
 			   <p id="tmperature" style="color: #FAD82C; padding-top: 15px;"> </p> 
 			   <p id="rain" style="color: #399DCC"> </p> 
-			   <p id="wMsg"> </p>
+			   <p id="wMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
 			</li>
 		</ul>
 		<ul>
-			<li class="boardTitle" style="float: none;">
-			   |  <span class="leftPadding">  COVID-19	${covid}</span>
-			   	  <p id="covidInfo"> <p>
-				  <p id="cMsg"> </p>
+			<li class="boardTitle" style="min-width: 340px;">	
+			     <span class="leftPadding">  COVID-19	</span>
+			   	  <p id="covidInfo" style="color: red; padding-top: 15px;"></p> <span id="todayCount" style="font-size: 15px; font-weight: 700; color: red;"></span>
+				  <p id="cMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
 			</li>
 		</ul>
 	</div>

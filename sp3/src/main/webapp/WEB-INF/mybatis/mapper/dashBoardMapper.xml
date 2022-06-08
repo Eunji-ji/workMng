@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dashboard">
+
+	<!-- 할 일  -->
+	<select id="selectTodoList" parameterType="String" resultType="com.sp.workMng.WorkMng">
+		SELECT * FROM (
+		    SELECT  
+		           todonum AS toDoNum 
+		         , userid AS userId
+		         , subject AS todoSubject
+		         , content AS todoContent
+		         , TO_CHAR(creatDt, 'YYYY.MM.DD') AS todoCreatDt
+		    from TODOLIST
+		    WHERE userId = #{userId}
+		    ORDER BY creatdt
+		)
+		WHERE ROWNUM &lt;= 5
+	</select>
+
+	<!-- PLAN -->
+	<select id="selectPlanList" parameterType="String" resultType="com.sp.workMng.WorkMng">
+		SELECT * FROM (
+		    SELECT  
+		          planNum AS planNum
+		        , userId AS userId
+		        , subject AS planSubject
+		        , planTm AS planTm
+		        , creatDt AS planCreatDt
+		    from PLAN
+		    WHERE userId = #{userId}
+		    ORDER BY creatdt
+		)
+		WHERE ROWNUM &lt;= 5
+	</select>
+
+	<!-- MEMO  -->
+	<select id="selectMemoList" parameterType="map" resultType="com.sp.workMng.WorkMng">
+		SELECT * FROM (
+		    SELECT  
+		          memonum AS memoNum
+		        , userid AS userId 
+		        , subject AS memoSubject 
+		        , content AS memoContent 
+		        , TO_CHAR(creatDt, 'YYYY.MM.DD') AS memoCreatDt
+		    from MEMO
+		    WHERE USERID = #{userId}
+		    ORDER BY creatdt
+		)
+		WHERE ROWNUM &lt;= 5
+	</select>
+
+	<insert id="insertGuest" parameterType="com.sp.guest.Guest">
+		INSERT INTO guest(num, userId, content, created)
+			VALUES (guest_seq.NEXTVAL, #{userId}, #{content}, SYSDATE)
+	</insert>
+	
+	<select id="dataCount" resultType="Integer">
+		SELECT NVL(COUNT(*), 0) FROM TODOLIST
+	</select>
+	
+	
+	<delete id="deleteGuest" parameterType="map">
+		DELETE guest WHERE num=#{num}
+			<if test="userId != 'admin' ">
+				AND userId=#{userId}
+			</if>   
+	</delete>   
+</mapper>

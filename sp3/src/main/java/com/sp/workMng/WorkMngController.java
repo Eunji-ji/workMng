@@ -9,8 +9,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,10 +31,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.sp.guest.Guest;
+import com.sp.member.SessionInfo;
+
 
 @Controller("workMng.workMngController")
 @RequestMapping("/workMng/*")
 public class WorkMngController {
+	
+	@Autowired
+	private WorkMngService workMngService;
+	
 	@RequestMapping(value="dashboard")
 	public String method() {
 		// 화면 로드시 공공 api 데이터 가져오기  
@@ -50,6 +60,22 @@ public class WorkMngController {
         return day;
 	}
 
+	// 날짜 ('yyyymmdd' 형태) return 
+	public String getBeforedate(String divCd) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Calendar cal = Calendar.getInstance();
+        
+        if(divCd.equals("Y")) {
+        	cal.add(Calendar.DATE,-1);
+        }
+
+        if(divCd.equals("B")) {
+        	cal.add(Calendar.DATE,-2);
+        }
+        String day = sdf.format(cal.getTime());
+        return day;
+	}
+	
 	// 현재 시간 '0-24 시간 형태'
 	public String getNowTime(String divCd) {
         SimpleDateFormat sdf = new SimpleDateFormat("hhmm");
@@ -73,12 +99,9 @@ public class WorkMngController {
 		return nValue.getNodeValue();
 	}
 	
-	// 코로나 정보 API
-	@RequestMapping(value="getCovidData", method=RequestMethod.POST)
-	@ResponseBody
-	public Map<String, String> getCovidData() {
-		Map<String, String> covidMap = new HashMap<>();
-		
+	// 코로나 api 호출 메서드
+	public NodeList getValue(String beforeDiv) {
+		NodeList nList = null;
 		try {
 	        StringBuilder urlBuilder = new StringBuilder("http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson"); /*URL*/
 	        String serviceKey = "=oBj4vm7AKoRsq2STsI79o%2BZHpOyN38r3Z9rzWwKV15DxpZt3%2BlZ%2F2jiqZlVu92O5rdwt%2B%2F8nylKIBEhn%2B%2FwBHQ%3D%3D";
@@ -87,7 +110,7 @@ public class WorkMngController {
 	        urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지번호*/
 	        urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*한 페이지 결과 수*/
 
-	        String yesterday = getdate("Y");
+	        String yesterday = beforeDiv.equals("B") ? getBeforedate("B") : getBeforedate("Y");
 	        urlBuilder.append("&" + URLEncoder.encode("startCreateDt","UTF-8") + "=" + URLEncoder.encode(yesterday, "UTF-8")); /*검색할 생성일 범위의 시작*/
 	        urlBuilder.append("&" + URLEncoder.encode("endCreateDt","UTF-8") + "=" + URLEncoder.encode(yesterday, "UTF-8")); /*검색할 생성일 범위의 종료*/
 
@@ -95,20 +118,45 @@ public class WorkMngController {
 	        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 	        Document document = (Document) documentBuilder.parse(urlBuilder.toString());
 
+	        System.out.println("url : " + urlBuilder.toString());
 	        document.getDocumentElement().normalize();
-	        NodeList nList = document.getElementsByTagName("item");
+	        nList = document.getElementsByTagName("item");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		return nList;
+	}
+	
+	// 코로나 정보 API parsing, return
+	@RequestMapping(value="getCovidData", method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String, String> getCovidData() {
+		Map<String, String> covidMap = new HashMap<>();
+		try {
+	        //어제 
+			NodeList nList = getValue("B");
 	        
 	        for(int i=0; i<nList.getLength(); i++) {
 	        	Node itemNode = nList.item(i);
 	        	if(itemNode.getNodeType() == Node.ELEMENT_NODE) {
 	        		Element eElement = (Element) itemNode;
-	        		System.out.println("확진자수  : " + getTagValue("decideCnt", eElement));
+	        		System.out.println("전전일 확진자수  : " + getTagValue("decideCnt", eElement));
 	        		System.out.println("기준일자  : " + getTagValue("stateDt", eElement));
-	        		System.out.println("기준시간  : " + getTagValue("stateTime", eElement));
-	        		
+	    	        covidMap.put("beforeDecideCnt", getTagValue("decideCnt", eElement)); // 확진자수
+	        	}
+	        }
+	        
+	        // 오늘 
+			nList = getValue("Y");
+	        for(int i=0; i<nList.getLength(); i++) {
+	        	Node itemNode = nList.item(i);
+	        	if(itemNode.getNodeType() == Node.ELEMENT_NODE) {
+	        		Element eElement = (Element) itemNode;
+	        		System.out.println("전일 확진자수  : " + getTagValue("decideCnt", eElement));
+	        		System.out.println("기준일자  : " + getTagValue("stateDt", eElement));
 	    	        covidMap.put("decideCnt", getTagValue("decideCnt", eElement)); // 확진자수
 	    	        covidMap.put("stateDt", getTagValue("stateDt", eElement)); // 기준일자
-	    	        covidMap.put("stateTime", getTagValue("stateTime", eElement)); // 기준시간
 	        	}
 	        }
 	        
@@ -190,7 +238,6 @@ public class WorkMngController {
 		        JSONObject jsonObject_items = (JSONObject) jsonObject_body.get("items");
 	
 		        JSONArray jsonArr = (JSONArray) jsonObject_items.get("item");
-		        	
 		       
 		        for(int i=0; i<jsonArr.size(); i++) {
 		        	JSONObject item = (JSONObject) jsonArr.get(i);
@@ -234,5 +281,32 @@ public class WorkMngController {
 		}
 		
 		return weatherMap;
+	}
+	
+	// 대시보드 리스트 출력 
+	@RequestMapping(value="selectList", method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> list(
+			HttpSession session 
+			) throws Exception{
+
+		System.out.println("************");
+		SessionInfo info = (SessionInfo)session.getAttribute("member");
+		String userId = info.getUserId(); 
+		
+		List<WorkMng> todoList =workMngService.selectTodoList(userId);
+		List<WorkMng> planList =workMngService.selectPlanList(userId);
+		List<WorkMng> memoList =workMngService.selectMemoList(userId);
+		
+		System.out.println("todoList ==== " +  todoList);
+		System.out.println("planList ==== " +  planList);
+		System.out.println("memoList ==== " +  memoList);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("todoList", todoList);
+		result.put("planList", planList);
+		result.put("memoList", memoList);
+		
+		return result;
 	}
 }

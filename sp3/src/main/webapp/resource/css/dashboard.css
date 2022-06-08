@@ -5,7 +5,6 @@
 	font-size: 13pt;
 	margin-bottom:10px;
 	color: #636262;
-	font-family: 나눔고딕, "맑은 고딕", 돋움, sans-serif;
 	list-style: none;
 	width: 45%;
 	height: 200px;
@@ -16,5 +15,20 @@
 
 .leftPadding{
 	padding-left: 9px;
+	color: #011F3A;
+	font-size: 27px;
+	/* font-family: 'Jua', sans-serif; */
 }
 
+.list{
+	font-weight: 700px;
+	font-size: 12pt;	
+	color: #ffffff;
+}
+
+.table{
+	border-collapse: separate;
+	border-radius: 8px; 
+	border: 3px solid #F4F1F2;
+	padding: 7px;
+}	

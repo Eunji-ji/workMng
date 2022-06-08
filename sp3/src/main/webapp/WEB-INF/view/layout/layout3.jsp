@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="<%=cp%>/resource/jquery/css/smoothness/jquery-ui.min.css" type="text/css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+<link href='http://www.openhiun.com/hangul/nanumbarungothic.css' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="<%=cp%>/resource/jquery/js/jquery.min.js"></script>
 
@@ -37,7 +38,11 @@ $(function(){
 	   });
 });
 </script>
-
+<style type="text/css">
+	body {
+	  font-family: 'Nanum Barun Gothic', sans-serif;
+	}
+</style>
 </head>
 
 <body>
