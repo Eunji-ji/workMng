@@ -2,9 +2,9 @@
 
 .boardTitle {
 	font-weight: bold;
-	font-size: 13pt;
+	font-size: 12pt;
 	margin-bottom:10px;
-	color: #636262;
+	color: #626262;
 	list-style: none;
 	width: 45%;
 	height: 200px;
@@ -15,8 +15,8 @@
 
 .leftPadding{
 	padding-left: 9px;
-	color: #011F3A;
-	font-size: 27px;
+	color: #03324F;
+	font-size: 23px;
 	/* font-family: 'Jua', sans-serif; */
 }
 
@@ -29,8 +29,12 @@
 .table{
 	border-collapse: separate;
 	border-radius: 8px; 
-	border: 3px solid #F4F1F2;
+	/* border: 2px solid #F4F1F2; */
+	box-shadow: 2px 2px 2px 2px #EEEAEF	;
 	padding: 7px;
+	width: 100%;
+	height: 150px;
+	background: #ffffff;
 }	
 
 .deleteBtn{
@@ -38,4 +42,26 @@
     border: none;
     color: #B4B6B8;
     cursor: pointer;
+}
+
+.apiDiv{
+	width: 40%; 
+	height: 100%; 
+	float: left;
+	border-radius: 20px;
+	background: #ffffff;
+}
+
+.apiDiv li{
+	min-width: 280px;
+    box-shadow: 2px 2px 2px 2px #eeeaef;
+    border-radius: 8px;
+    /* padding: 0px; */
+    margin-left: 37px;
+    margin-top: 40px;
+}
+
+.apiDivIcon{
+	width: 100px;
+	min-height: 60px;
 }

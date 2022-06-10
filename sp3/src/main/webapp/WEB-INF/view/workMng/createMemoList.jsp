@@ -33,10 +33,10 @@ $(function(){
     function sendOk() {
         var f = document.noticeForm;
 
-    	var str = f.todoSubject.value;
+    	var str = f.memoSubject.value;
         if(!str) {
             alert("제목을 입력하세요. ");
-            f.todoSubject.focus();
+            f.memoSubject.focus();
             return;
         }
     	f.action="<%=cp%>/workMng/insertList";
@@ -51,29 +51,29 @@ $(function(){
     
     <div>
 			<form name="noticeForm" method="post" enctype="multipart/form-data">
-			  <input type="hidden" name="saveDiv" value="T">
+			  <input type="hidden" name="saveDiv" value="M">
 			  <table style="width: 100%; margin: 20px auto 0px; border-spacing: 0px; border-collapse: collapse;">
 				  <tbody id="tb">
-				  <tr align="left" height="40" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"> 
-				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">제&nbsp;&nbsp;&nbsp;&nbsp;목</td>
-				      <td style="padding-left:10px;"> 
-				        <input type="text" name="todoSubject" maxlength="100" class="boxTF" style="width: 95%;" value="${dto.subject}">
-				      </td>
-				  </tr>
-				
-				  <tr align="left" height="40" style="border-bottom: 1px solid #cccccc;"> 
-				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">중요 여부</td>
-				      <td style="padding-left:10px;"> 
-				            <input type="checkbox" name="importance" value="Y" ><span style="color:#E45636">&nbsp;&nbsp;왕중요 !</span>
-				      </td>
-				  </tr>
-				  
-				  <tr align="left" height="40" style="border-bottom: 1px solid #cccccc;"> 
-				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">작성자</td>
-				      <td style="padding-left:10px;"> 
-				          ${sessionScope.member.userName}
-				      </td>
-				  </tr>
+					  <tr align="left" height="40" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"> 
+					      <td width="100" bgcolor="#eeeeee" style="text-align: center;">제&nbsp;&nbsp;&nbsp;&nbsp;목</td>
+					      <td style="padding-left:10px;"> 
+					        <input type="text" name="memoSubject" maxlength="100" class="boxTF" style="width: 95%;" value="${dto.subject}">
+					      </td>
+					  </tr>
+	
+					  <tr align="left" height="40" style="border-bottom: 1px solid #cccccc;"> 
+					      <td width="100" bgcolor="#eeeeee" style="text-align: center;">작성자</td>
+					      <td style="padding-left:10px;"> 
+					          ${sessionScope.member.userName}
+					      </td>
+					  </tr>
+					  <tr style="border-bottom: 1px solid #cccccc;"> 
+					      <td width="100" bgcolor="#eeeeee" style="padding-top:5px; text-align: center;" valign="top">내&nbsp;&nbsp;&nbsp;용</td>
+					      <td valign="top" style="padding:5px 0px 5px 10px;" align="left"> 
+					        <textarea name="memoContent" id="content" cols="72" class="boxTA" style="width:97%; height: 70px;"></textarea>
+					      </td>
+					  </tr>
+
 	              </tbody>
 			  </table>
 			

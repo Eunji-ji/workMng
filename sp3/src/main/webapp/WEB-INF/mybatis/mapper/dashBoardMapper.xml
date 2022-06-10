@@ -7,14 +7,14 @@
 	<select id="selectTodoList" parameterType="String" resultType="com.sp.workMng.WorkMng">
 		SELECT * FROM (
 		    SELECT  
-		           todonum AS toDoNum 
-		         , userid AS userId
+		           todoNum AS toDoNum 
+		         , userId AS userId
 		         , subject AS todoSubject
 		         , TO_CHAR(creatDt, 'YYYY.MM.DD') AS todoCreatDt
 		         , importance AS importance
 		    from TODOLIST
 		    WHERE userId = #{userId}
-		    ORDER BY creatdt
+		    ORDER BY CASE IMPORTANCE WHEN 'Y' THEN 0 ELSE 1 END , CREATDT DESC
 		)
 		WHERE ROWNUM &lt;= 5
 	</select>
@@ -49,11 +49,29 @@
 		        , creatDt AS planCreatDt
 		    from PLAN
 		    WHERE userId = #{userId}
-		    ORDER BY creatdt
+		    ORDER BY planTm DESC, creatDt DESC
 		)
 		WHERE ROWNUM &lt;= 5
 	</select>
+	
+	<insert id="insertPlan" parameterType="com.sp.workMng.WorkMng">
+		INSERT INTO PLAN (
+		   USERID
+		 , SUBJECT
+		 , PLANTM
+		)
+		VALUES (
+		   #{userId}
+		 , #{planSubject}
+		 , #{planTm}
+		)	
+	</insert>	
 
+	<delete id="deletePlan" parameterType="Integer">
+		DELETE FROM PLAN 
+		WHERE PLANNUM = #{planNum} 
+	</delete>
+	
 	<!-- MEMO  -->
 	<select id="selectMemoList" parameterType="map" resultType="com.sp.workMng.WorkMng">
 		SELECT * FROM (
@@ -65,25 +83,26 @@
 		        , TO_CHAR(creatDt, 'YYYY.MM.DD') AS memoCreatDt
 		    from MEMO
 		    WHERE USERID = #{userId}
-		    ORDER BY creatdt
+		    ORDER BY creatdt DESC
 		)
 		WHERE ROWNUM &lt;= 5
 	</select>
 
-	<insert id="insertGuest" parameterType="com.sp.guest.Guest">
-		INSERT INTO guest(num, userId, content, created)
-			VALUES (guest_seq.NEXTVAL, #{userId}, #{content}, SYSDATE)
-	</insert>
-	
-	<select id="dataCount" resultType="Integer">
-		SELECT NVL(COUNT(*), 0) FROM TODOLIST
-	</select>
-	
-	
-	<delete id="deleteGuest" parameterType="map">
-		DELETE guest WHERE num=#{num}
-			<if test="userId != 'admin' ">
-				AND userId=#{userId}
-			</if>   
-	</delete>   
+	<insert id="insertMemo" parameterType="com.sp.workMng.WorkMng">
+		INSERT INTO MEMO (
+		   USERID
+		 , SUBJECT
+		 , CONTENT
+		)
+		VALUES (
+		   #{userId}
+		 , #{memoSubject}
+		 , #{memoContent}
+		)	
+	</insert>	
+
+	<delete id="deleteMemo" parameterType="Integer">
+		DELETE FROM MEMO 
+		WHERE MEMONUM = #{memoNum} 
+	</delete>
 </mapper>

@@ -33,38 +33,51 @@ $(function(){
     function sendOk() {
         var f = document.noticeForm;
 
-    	var str = f.todoSubject.value;
+    	var str = f.planSubject.value;
         if(!str) {
             alert("제목을 입력하세요. ");
-            f.todoSubject.focus();
+            f.planSubject.focus();
             return;
         }
-    	f.action="<%=cp%>/workMng/insertList";
+    	var str = f.planTm.value;
+        if(!str) {
+            alert("시간을 입력하세요. ");
+            f.planTm.focus();
+            return;
+        }
+
+        f.action="<%=cp%>/workMng/insertList";
         f.submit();
+    }
+    
+    function planTmSetting(value){
+    	var str = value.replace('T', ' ');
+    	$("[name='planTm']").val(str);
     }
 </script>
 
 <div class="body-container" style="width: 700px;">
     <div class="body-title">
-        <h3><i class="far fa-clipboard"></i> TO DO LIST </h3>
+        <h3><i class="far fa-clipboard"></i> PLAN </h3>
     </div>
     
     <div>
 			<form name="noticeForm" method="post" enctype="multipart/form-data">
-			  <input type="hidden" name="saveDiv" value="T">
+			  <input type="hidden" name="saveDiv" value="P">
 			  <table style="width: 100%; margin: 20px auto 0px; border-spacing: 0px; border-collapse: collapse;">
 				  <tbody id="tb">
 				  <tr align="left" height="40" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"> 
 				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">제&nbsp;&nbsp;&nbsp;&nbsp;목</td>
 				      <td style="padding-left:10px;"> 
-				        <input type="text" name="todoSubject" maxlength="100" class="boxTF" style="width: 95%;" value="${dto.subject}">
+				        <input type="text" name="planSubject" maxlength="100" class="boxTF" style="width: 95%;" value="${dto.subject}">
 				      </td>
 				  </tr>
 				
 				  <tr align="left" height="40" style="border-bottom: 1px solid #cccccc;"> 
-				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">중요 여부</td>
+				      <td width="100" bgcolor="#eeeeee" style="text-align: center;">계획 시간</td>
 				      <td style="padding-left:10px;"> 
-				            <input type="checkbox" name="importance" value="Y" ><span style="color:#E45636">&nbsp;&nbsp;왕중요 !</span>
+				            <input type="datetime-local" name="planTmView" onchange="planTmSetting(this.value)">
+				            <input type="hidden" name="planTm">
 				      </td>
 				  </tr>
 				  

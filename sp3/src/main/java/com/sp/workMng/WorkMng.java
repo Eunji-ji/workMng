@@ -23,6 +23,7 @@ public class WorkMng {
 
 	/* 공통 */
     private String userId;
+    private String saveDiv;
     
     public int getToDoNum() {
 		return toDoNum;
@@ -107,6 +108,12 @@ public class WorkMng {
 	}
 	public void setImportance(String importance) {
 		this.importance = importance;
+	}
+	public String getSaveDiv() {
+		return saveDiv;
+	}
+	public void setSaveDiv(String saveDiv) {
+		this.saveDiv = saveDiv;
 	}
 	
 } 

@@ -199,7 +199,7 @@ public class WorkMngController {
 	        	day = getdate("Y");
 	        	nowTime = getNowTime("Y");
 	        }
-		    	
+	        
 		    boolean dataNullChk = false;
 	        
 	        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst"); /*URL*/
@@ -319,8 +319,8 @@ public class WorkMngController {
 		return ".workMng.createTodoList";
 	}
 
-	// 할일 저장 
-	@RequestMapping(value="insertTodoList", method=RequestMethod.POST)
+	// 할일 신규 등록
+	@RequestMapping(value="insertList", method=RequestMethod.POST)
 	public String createdSubmit(
 			WorkMng dto,
 			HttpSession session) throws Exception {
@@ -329,24 +329,57 @@ public class WorkMngController {
 		String userId = info.getUserId(); 
 		dto.setUserId(userId);
 		
-		if(dto.getImportance() == null) {
-			dto.setImportance("X");
+		if(dto.getSaveDiv().equals("T")) {
+			if(dto.getImportance() == null) {
+				dto.setImportance("X");
+			}
+			workMngService.insertTodoList(dto);
+		}else if(dto.getSaveDiv().equals("P")) {
+			workMngService.insertPlan(dto);
+		}else if(dto.getSaveDiv().equals("M")) {
+			workMngService.insertMemo(dto);
 		}
 		
-		workMngService.insertTodoList(dto);
 		return "redirect:/workMng/dashboard";
 	}
 	
-	// 할일 저장 
-	@RequestMapping(value="deleteTodoList", method=RequestMethod.POST)
+	// 할일 삭제
+	@RequestMapping(value="deleteList", method=RequestMethod.POST)
 	@ResponseBody
 	public Map<String, Object> deleteTodoList(
-			@RequestParam int todoNum,
+			@RequestParam int num,
+			@RequestParam String saveDiv,
 			HttpSession session) throws Exception {
 
-		workMngService.deleteTodoList(todoNum);
 		Map<String, Object> map = new HashMap<>();
+
+		if(saveDiv.equals("T")) {
+			workMngService.deleteTodoList(num);
+		}else if(saveDiv.equals("P")) {
+			workMngService.deletePlan(num);
+		}else if(saveDiv.equals("M")) {
+			workMngService.deleteMemo(num);
+		}
+		
 		map.put("result", "success");
 		return map;
+	}
+	
+	// plan 작성 화면 호출 
+	@RequestMapping(value="createPlanList", method=RequestMethod.GET)
+	public String createdPlanForm(
+			Model model,
+			HttpSession session
+			) throws Exception {
+		return ".workMng.createPlanList";
+	}
+	
+	// 메모 작성 화면 호출 
+	@RequestMapping(value="createMemoList", method=RequestMethod.GET)
+	public String createdMemoForm(
+			Model model,
+			HttpSession session
+			) throws Exception {
+		return ".workMng.createMemoList";
 	}
 }

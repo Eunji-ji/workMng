@@ -72,12 +72,16 @@ function ajaxJSON(url, method, div, param) {
 							if(data.rain == "0"){
 								rain = "비가 오지 않음";
 								$("#rain").css("color", "#F1C208");
-							}else if(data.rain == "2"){
-								rain = "눈/비"
-							}else if(data.rain == "4"){
-								rain = "소나기"
+								var html = '<i class="fa-solid fa-sun" style="color:#E6CD6A;></i>'
+								$("#apiDivIcon").append(html);
 							}else{
-								rain = "비"
+								if(data.rain == "2"){
+									rain = "눈/비"
+								}else if(data.rain == "4"){
+									rain = "소나기"
+								}else{
+									rain = "비"
+								}
 							}
 							$("#rain").text(rain);
 						}
@@ -149,29 +153,28 @@ function selectTodoList(todoList){
 		html += '<tr>';
 		html += '<td style="display: none;">' + data.toDoNum + '</td>';
 		html += '<td style="padding-right: 5px;"> <input type="checkbox" id='+data.toDoNum+'> </td>';
-		/* html += '<td>' + data.todoCreatDt + '</td>'; */
-		html += '<td id="todoSubject">' + data.todoSubject + '</td>';
 		if(data.importance == 'Y'){
 			html += '<td> <i class="fas fa-star" style="color:#EDD03F; padding: 0 	5px"></i> </td>';
 		}else{
 			html += '<td> <i class="far fa-star" style="color:#EDD03F; padding: 0 5px"></i> </td>';	
 		}
-		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn"></td>';
+		/* html += '<td>' + data.todoCreatDt + '</td>'; */
+		html += '<td id="todoSubject">' + data.todoSubject + '</td>';
+		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn" id="deleteTodoBtn"></td>';
 		html += "</tr>";	
 	}
 	$("#todoListTb").append(html);
 }
-/* <a style="color: #B4B6B8; padding: 0 5px; id="deleteTodoList">삭제</a> */
+
 function selectPlanList(planList){
 	var html = '';
 	for(var i=0; i<planList.length; i++){
 		var data = planList[i];
 		html += '<tr>';
 		html += '<td style="display: none;">' + data.planNum + '</td>';
-		html += '<td>' + data.planCreatDt + '</td>';
-		html += '<td style="color: #3799F3; padding: 0 5px">' + data.planTm + '</td>';
-		html += '<td style="min-width: 40px;">' + data.planSubject + '</td>';
-		html += '<td><a style="color: #B4B6B8; padding: 0 5px;">삭제</a></td>';
+		html += '<td style="width:145px; color: #3799F3; padding: 0 5px">' + data.planTm + '</td>';
+		html += '<td align="left" style="min-width: 40px;">' + data.planSubject + '</td>';
+		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn" id="deletePlanBtn"></td>';
 		html += "</tr>";
 	}
 	$("#planListTb").append(html);
@@ -183,22 +186,47 @@ function selectMemoList(memoList){
 		var data = memoList[i];
 		html += '<tr>';
 		html += '<td style="display: none;">' + data.memoNum + '</td>';
-		html += '<td>' + data.memoCreatDt + '</td>';
+		/* html += '<td>' + data.memoCreatDt + '</td>'; */
 		html += '<td>' + data.memoSubject + '</td>';
+		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn" id="deleteMemoBtn"></td>';
 		html += "</tr>";
 	}
 	$("#memoListTb").append(html);
 }
 
-$(document).on("click", ".deleteBtn", function(){
+$(document).on("click", "#deleteTodoBtn", function(){
 	if(confirm("삭제하시겠습니까?")){
 		var checkBtn = $(this);
 		var tr = checkBtn.parent().parent();
 		var td = tr.children();
 		var no = td.eq(0).text();
-		var param = {todoNum : no};
-		url = "<%=cp%>/workMng/deleteTodoList";
+		var param = {num : no, saveDiv : "T"};
+		url = "<%=cp%>/workMng/deleteList";
 		console.log(no);
+		ajaxJSON(url,"post", "D", param);
+	}
+});
+
+$(document).on("click", "#deletePlanBtn", function(){
+	if(confirm("삭제하시겠습니까?")){
+		var checkBtn = $(this);
+		var tr = checkBtn.parent().parent();
+		var td = tr.children();
+		var no = td.eq(0).text();
+		var param = {num : no, saveDiv : "P"};
+		url = "<%=cp%>/workMng/deleteList";
+		ajaxJSON(url,"post", "D", param);
+	}
+});
+
+$(document).on("click", "#deleteMemoBtn", function(){
+	if(confirm("삭제하시겠습니까?")){
+		var checkBtn = $(this);
+		var tr = checkBtn.parent().parent();
+		var td = tr.children();
+		var no = td.eq(0).text();
+		var param = {num : no, saveDiv : "M"};
+		url = "<%=cp%>/workMng/deleteList";
 		ajaxJSON(url,"post", "D", param);
 	}
 });
@@ -225,13 +253,12 @@ for(let i = 0; i < ul.childElementCount; i++){
 </script>
 
 <body>
-<div class="body-container" style="width: 900px; height: 600px; padding-top: 80px; padding-bottom: 80px;">
+<div class="body-container" style="width: 930px; height: 600px; margin-top: 40px; margin-bottom: 40px; background: #F8F8F8; border-radius: 27px; padding: 30px 20px">
 	<div style="width: 60%; height: 100%; float: left;">
 		<ul>
 			<li class="boardTitle">
-			   <span class="leftPadding"> TO DO LIST <a href="javascript:location.href='<%=cp%>/workMng/createTodoList';"><i class="far fa-edit"></i></a></span> 
+			   <span class="leftPadding"> TO DO LIST <a href="javascript:location.href='<%=cp%>/workMng/createTodoList';"><i class="far fa-edit" style="color: #03324F"></i></a></span> 
 				<div id="todoList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
-				<%-- <button type="button" class="btn" onclick="javascript:location.href='<%=cp%>/notice/created';">+</button> --%>
 					<table class="table">
 						<tbody id="todoListTb">
 						</tbody>
@@ -241,7 +268,7 @@ for(let i = 0; i < ul.childElementCount; i++){
 		</ul>
 		<ul>
 			<li class="boardTitle">
-			    <span class="leftPadding">  MEMO </span>
+			    <span class="leftPadding">  MEMO <a href="javascript:location.href='<%=cp%>/workMng/createMemoList';"><i class="far fa-edit" style="color: #03324F"></i></a></span>
 				<div id="memoList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
 					<table class="table">
 						<tbody id="memoListTb">
@@ -251,8 +278,8 @@ for(let i = 0; i < ul.childElementCount; i++){
 			</li>
 		</ul>
 		<ul>
-			<li class="boardTitle" style="width: 90%">
-			    <span class="leftPadding">  TODAY PLAN </span>
+			<li class="boardTitle" style="width: 93%; padding-top: 20px;">
+			    <span class="leftPadding">  TODAY PLAN <a href="javascript:location.href='<%=cp%>/workMng/createPlanList';"><i class="far fa-edit" style="color: #03324F"></i></a></span>
 				<div id="planList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
 					<table class="table">
 						<tbody id="planListTb">
@@ -262,18 +289,21 @@ for(let i = 0; i < ul.childElementCount; i++){
 			</li>
 		</ul>
 	</div>
-	<div style="width: 40%; height: 100%; float: left;">
+	<div class="apiDiv">
 		<ul>
-			<li class="boardTitle" style="min-width: 340px;">
+			<li class="boardTitle">
 			     <span class="leftPadding">  WEATHER </span>
+			   <div id="apiDivIcon">
+			   </div>
 			   <p id="tmperature" style="color: #FAD82C; padding-top: 15px;"> </p> 
 			   <p id="rain" style="color: #399DCC"> </p> 
 			   <p id="wMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
 			</li>
 		</ul>
 		<ul>
-			<li class="boardTitle" style="min-width: 340px;">	
+			<li class="boardTitle">	
 			     <span class="leftPadding">  COVID-19	</span>
+				     <img src='<%=cp%>/resource/images/covid.png' style="width: 70px; padding: 15px 80px;">
 			   	  <p id="covidInfo" style="color: red; padding-top: 15px;"></p> <span id="todayCount" style="font-size: 15px; font-weight: 700; color: red;"></span>
 				  <p id="cMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
 			</li>
