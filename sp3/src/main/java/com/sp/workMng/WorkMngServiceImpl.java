@@ -31,18 +31,34 @@ public class WorkMngServiceImpl implements WorkMngService{
 		return todolist;
 	}
 
+	/**
+	 * 할일 등록
+	 * @param : dto
+	 * @return : 
+	 **/	
 	@Override
 	public void insertTodoList(WorkMng dto) throws Exception {
 		try{
-			dao.insertData("guest.insertGuest", dto);
+			dao.insertData("dashboard.insertTodoList", dto);
 		} catch(Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
 	}
 
+	/**
+	 * 할일 삭제
+	 * @param : todoNum
+	 * @return : 
+	 **/	
 	@Override
 	public void deleteTodoList(int todoNum) throws Exception {
+		try{
+			dao.deleteData("dashboard.deleteTodoList", todoNum);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	/**
@@ -62,13 +78,35 @@ public class WorkMngServiceImpl implements WorkMngService{
 		System.out.println(planlist);
 		return planlist;
 	}
-
+	
+	/**
+	 * PLAN 저장
+	 * @param : userId
+	 * @return : List
+	 **/
 	@Override
 	public void insertPlan(WorkMng dto) throws Exception {
+		try{
+			dao.insertData("dashboard.insertPlan", dto);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
+	/**
+	 * PLAN 삭제
+	 * @param : planNum
+	 * @return : 
+	 **/
 	@Override
-	public void deletePlan(int todoNum) throws Exception {
+	public void deletePlan(int planNum) throws Exception {
+		try{
+			dao.deleteData("dashboard.deletePlan", planNum);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	/**
@@ -89,16 +127,34 @@ public class WorkMngServiceImpl implements WorkMngService{
 		return memolist;
 	}
 
+	/**
+	 * memo 등록
+	 * @param : dto
+	 * @return : 
+	 **/	
 	@Override
 	public void insertMemo(WorkMng dto) throws Exception {
-		// TODO Auto-generated method stub
-		
+		try{
+			dao.insertData("dashboard.insertMemo", dto);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}		
 	}
 
+	/**
+	 * memo 삭제
+	 * @param : memoNum
+	 * @return : 
+	 **/	
 	@Override
-	public void deleteMemo(int todoNum) throws Exception {
-		// TODO Auto-generated method stub
-		
+	public void deleteMemo(int memoNum) throws Exception {
+		try{
+			dao.deleteData("dashboard.deleteMemo", memoNum);
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}		
 	}
 
 }

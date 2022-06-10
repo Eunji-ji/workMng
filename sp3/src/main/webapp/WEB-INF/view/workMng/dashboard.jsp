@@ -9,6 +9,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="_csrf" content="${_csrf.token}"/>
 <title>Insert title here</title>
 	
 <link rel="stylesheet" href="<%=cp%>/resource/css/style.css" type="text/css">
@@ -17,9 +18,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<link rel="stlyesheet" href="<%=cp%>/resource/css/font-awesome.min.css" type="text/css">
 <style type="text/css">
 body {
   font-family: 'Nanum Barun Gothic', sans-serif;
+}
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 48
 }
 </style>
 <script type="text/javascript" >
@@ -38,11 +47,11 @@ $(document).ready(function(){
 
 });
 
-function ajaxJSON(url, method, div) {
+function ajaxJSON(url, method, div, param) {
 	$.ajax({
 		type:method,
 		url:url,
-		//data,
+		data:param,
 		dataType:"json",
 		success:function(data) {
 				if(div === "W"){
@@ -102,6 +111,18 @@ function ajaxJSON(url, method, div) {
 						selectMemoList(memoList);
 					}
 				}
+				if(div === "D"){
+					if(data.result == 'success'){
+						$("#todoListTb tr").remove();
+						$("#planListTb tr").remove();
+						$("#memoListTb tr").remove();
+						alert("삭제되었습니다.");
+						selectList();
+					}else{
+						alert("삭제가 되지 않았습니다. 다시 시도해주세요.");
+					}
+				}
+				
 		},
 		beforeSend:function(jqXHR) {
 			jqXHR.setRequestHeader("AJAX", true);
@@ -128,13 +149,19 @@ function selectTodoList(todoList){
 		html += '<tr>';
 		html += '<td style="display: none;">' + data.toDoNum + '</td>';
 		html += '<td style="padding-right: 5px;"> <input type="checkbox" id='+data.toDoNum+'> </td>';
-		html += '<td>' + data.todoCreatDt + '</td>';
-		html += '<td>' + data.todoSubject + '</td>';
+		/* html += '<td>' + data.todoCreatDt + '</td>'; */
+		html += '<td id="todoSubject">' + data.todoSubject + '</td>';
+		if(data.importance == 'Y'){
+			html += '<td> <i class="fas fa-star" style="color:#EDD03F; padding: 0 	5px"></i> </td>';
+		}else{
+			html += '<td> <i class="far fa-star" style="color:#EDD03F; padding: 0 5px"></i> </td>';	
+		}
+		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn"></td>';
 		html += "</tr>";	
 	}
 	$("#todoListTb").append(html);
 }
-
+/* <a style="color: #B4B6B8; padding: 0 5px; id="deleteTodoList">삭제</a> */
 function selectPlanList(planList){
 	var html = '';
 	for(var i=0; i<planList.length; i++){
@@ -143,10 +170,10 @@ function selectPlanList(planList){
 		html += '<td style="display: none;">' + data.planNum + '</td>';
 		html += '<td>' + data.planCreatDt + '</td>';
 		html += '<td style="color: #3799F3; padding: 0 5px">' + data.planTm + '</td>';
-		html += '<td>' + data.planSubject + '</td>';
+		html += '<td style="min-width: 40px;">' + data.planSubject + '</td>';
+		html += '<td><a style="color: #B4B6B8; padding: 0 5px;">삭제</a></td>';
 		html += "</tr>";
 	}
-	console.log(html);
 	$("#planListTb").append(html);
 }
 
@@ -162,6 +189,39 @@ function selectMemoList(memoList){
 	}
 	$("#memoListTb").append(html);
 }
+
+$(document).on("click", ".deleteBtn", function(){
+	if(confirm("삭제하시겠습니까?")){
+		var checkBtn = $(this);
+		var tr = checkBtn.parent().parent();
+		var td = tr.children();
+		var no = td.eq(0).text();
+		var param = {todoNum : no};
+		url = "<%=cp%>/workMng/deleteTodoList";
+		console.log(no);
+		ajaxJSON(url,"post", "D", param);
+	}
+});
+
+function selectList(){
+	// list 출력 
+	var url3 ="<%=cp%>/workMng/selectList";
+	ajaxJSON(url3,"post", "L");
+} 
+
+/* let ul = document.querySelector('ul');
+const checkClick = (i) => {
+   if(ul.children[i].querySelector('td').style.textDecorationLine === "line-through"){
+      ul.children[i].querySelector('td').style.textDecorationLine = '';
+   } else {
+      ul.children[i].querySelector('td').style.textDecorationLine = "line-through"
+   }
+}
+
+for(let i = 0; i < ul.childElementCount; i++){
+   ul.children[i].querySelector('input').value = i
+   ul.children[i].querySelector('input').setAttribute('onClick', `checkClick(${i})`);
+} */
 </script>
 
 <body>
@@ -169,8 +229,9 @@ function selectMemoList(memoList){
 	<div style="width: 60%; height: 100%; float: left;">
 		<ul>
 			<li class="boardTitle">
-			   <span class="leftPadding"> TO DO LIST</span>
+			   <span class="leftPadding"> TO DO LIST <a href="javascript:location.href='<%=cp%>/workMng/createTodoList';"><i class="far fa-edit"></i></a></span> 
 				<div id="todoList" style="font-size: 14px; font-weight: 700px; color: #000000; padding: 10px;">
+				<%-- <button type="button" class="btn" onclick="javascript:location.href='<%=cp%>/notice/created';">+</button> --%>
 					<table class="table">
 						<tbody id="todoListTb">
 						</tbody>

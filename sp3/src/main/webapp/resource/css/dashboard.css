@@ -32,3 +32,10 @@
 	border: 3px solid #F4F1F2;
 	padding: 7px;
 }	
+
+.deleteBtn{
+	background: white;
+    border: none;
+    color: #B4B6B8;
+    cursor: pointer;
+}

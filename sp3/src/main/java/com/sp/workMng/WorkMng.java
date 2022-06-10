@@ -7,7 +7,8 @@ public class WorkMng {
 	private String todoSubject;
 	private String todoContent;
     private String todoCreatDt;
-
+    private String importance; 
+    
     /* PLAN DTO */
 	private int planNum;
     private String planTm;
@@ -100,6 +101,12 @@ public class WorkMng {
 	}
 	public void setMemoCreatDt(String memoCreatDt) {
 		this.memoCreatDt = memoCreatDt;
+	}
+	public String getImportance() {
+		return importance;
+	}
+	public void setImportance(String importance) {
+		this.importance = importance;
 	}
 	
 } 

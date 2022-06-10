@@ -10,14 +10,33 @@
 		           todonum AS toDoNum 
 		         , userid AS userId
 		         , subject AS todoSubject
-		         , content AS todoContent
 		         , TO_CHAR(creatDt, 'YYYY.MM.DD') AS todoCreatDt
+		         , importance AS importance
 		    from TODOLIST
 		    WHERE userId = #{userId}
 		    ORDER BY creatdt
 		)
 		WHERE ROWNUM &lt;= 5
 	</select>
+	
+	
+	<insert id="insertTodoList" parameterType="com.sp.workMng.WorkMng">
+		INSERT INTO todolist (
+		   USERID
+		 , SUBJECT
+		 , IMPORTANCE
+		)
+		VALUES (
+		   #{userId}
+		 , #{todoSubject}
+		 , #{importance}
+		)	
+	</insert>
+	
+	<delete id="deleteTodoList" parameterType="Integer">
+		DELETE FROM TODOLIST 
+		WHERE todonum = #{toDoNum} 
+	</delete>
 
 	<!-- PLAN -->
 	<select id="selectPlanList" parameterType="String" resultType="com.sp.workMng.WorkMng">

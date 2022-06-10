@@ -1,6 +1,7 @@
 package com.sp.workMng;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -21,6 +22,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +35,7 @@ import org.xml.sax.InputSource;
 
 import com.sp.guest.Guest;
 import com.sp.member.SessionInfo;
+import com.sp.notice.Notice;
 
 
 @Controller("workMng.workMngController")
@@ -82,7 +85,7 @@ public class WorkMngController {
         Calendar cal = Calendar.getInstance();
 
         if(divCd.equals("Y")) {
-        	cal.add(Calendar.HOUR, +6);
+        	cal.add(Calendar.HOUR_OF_DAY, +6);
         }
         
         String day = sdf.format(cal.getTime());
@@ -182,13 +185,15 @@ public class WorkMngController {
 		    String day = getdate("T");
 		    String nowTime = getNowTime("T");
 
-	        SimpleDateFormat sdf = new SimpleDateFormat("kk");
-	        Date date1 = sdf.parse("24"); 
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddkk");
+	        String sfdDt = sdf.format(new Date());
+	        Date date1 = sdf.parse(sfdDt);
 	        
 	        Calendar cal = Calendar.getInstance();
 	        Calendar nowCal = Calendar.getInstance();
 	        cal.setTime(date1);
-	        
+	        cal.set(Calendar.HOUR_OF_DAY, 24);
+	        System.out.println("##cal ::: " + cal);
 	        System.out.println(nowCal.after(cal));
 	        if(nowCal.after(cal)) {
 	        	day = getdate("Y");
@@ -290,7 +295,6 @@ public class WorkMngController {
 			HttpSession session 
 			) throws Exception{
 
-		System.out.println("************");
 		SessionInfo info = (SessionInfo)session.getAttribute("member");
 		String userId = info.getUserId(); 
 		
@@ -298,15 +302,51 @@ public class WorkMngController {
 		List<WorkMng> planList =workMngService.selectPlanList(userId);
 		List<WorkMng> memoList =workMngService.selectMemoList(userId);
 		
-		System.out.println("todoList ==== " +  todoList);
-		System.out.println("planList ==== " +  planList);
-		System.out.println("memoList ==== " +  memoList);
-		
 		Map<String, Object> result = new HashMap<>();
 		result.put("todoList", todoList);
 		result.put("planList", planList);
 		result.put("memoList", memoList);
 		
 		return result;
+	}
+	
+	// 할일 작성 화면 호출 
+	@RequestMapping(value="createTodoList", method=RequestMethod.GET)
+	public String createdForm(
+			Model model,
+			HttpSession session
+			) throws Exception {
+		return ".workMng.createTodoList";
+	}
+
+	// 할일 저장 
+	@RequestMapping(value="insertTodoList", method=RequestMethod.POST)
+	public String createdSubmit(
+			WorkMng dto,
+			HttpSession session) throws Exception {
+
+		SessionInfo info = (SessionInfo)session.getAttribute("member");
+		String userId = info.getUserId(); 
+		dto.setUserId(userId);
+		
+		if(dto.getImportance() == null) {
+			dto.setImportance("X");
+		}
+		
+		workMngService.insertTodoList(dto);
+		return "redirect:/workMng/dashboard";
+	}
+	
+	// 할일 저장 
+	@RequestMapping(value="deleteTodoList", method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> deleteTodoList(
+			@RequestParam int todoNum,
+			HttpSession session) throws Exception {
+
+		workMngService.deleteTodoList(todoNum);
+		Map<String, Object> map = new HashMap<>();
+		map.put("result", "success");
+		return map;
 	}
 }
