@@ -69,10 +69,11 @@ function ajaxJSON(url, method, div, param) {
 						}
 						if(data.rain != null && data.rain != ""){
 							var rain = "";
+							var html = "";
 							if(data.rain == "0"){
 								rain = "비가 오지 않음";
 								$("#rain").css("color", "#F1C208");
-								var html = '<i class="fa-solid fa-sun" style="color:#E6CD6A;></i>'
+								html = '<img src="<%=cp%>/resource/images/sunny.png" style="width: 85px; padding: 5px 80px;">';
 								$("#apiDivIcon").append(html);
 							}else{
 								if(data.rain == "2"){
@@ -82,6 +83,7 @@ function ajaxJSON(url, method, div, param) {
 								}else{
 									rain = "비"
 								}
+								html = '<img src="<%=cp%>/resource/images/umbrella.png" style="width: 85px; padding: 5px 80px;">';
 							}
 							$("#rain").text(rain);
 						}
@@ -93,7 +95,9 @@ function ajaxJSON(url, method, div, param) {
 					console.log("C : " +data.result);
 					if(data.result == 'success'){
 						var todayCount = setTodayCovidData(data);
-						$("#covidInfo").text('총 확진자 : ' + data.decideCnt);
+						var decideCnt = fcNumberFormat(data.decideCnt);
+
+						$("#covidInfo").text('총 확진자 : ' + decideCnt);
 						$("#todayCount").text('( + ' + todayCount + ' )');
 					}else{
 						$("#cMsg").text("현재 코로나19 관련 정보를 불러올 수 없습니다.");
@@ -142,8 +146,17 @@ function ajaxJSON(url, method, div, param) {
 	});
 }
 
+// 오늘 추가 확진자 수 구하기
 function setTodayCovidData(data){
-	return Number(data.decideCnt) - Number(data.beforeDecideCnt);
+	var decideCnt = data.decideCnt != undefined && data.decideCnt != null ? true : false;
+	var beforeDecideCnt = data.beforeDecideCnt != undefined && data.beforeDecideCnt != null ? true : false;
+	
+	var todayCnt = 0; 
+	if(decideCnt && beforeDecideCnt){
+		todayCnt = Number(data.decideCnt) - Number(data.beforeDecideCnt);
+		todayCnt = fcNumberFormat(todayCnt); 
+	}
+	return todayCnt;
 }
 
 function selectTodoList(todoList){
@@ -184,10 +197,12 @@ function selectMemoList(memoList){
 	var html = '';
 	for(var i=0; i<memoList.length; i++){
 		var data = memoList[i];
+		var url = "<%=cp%>/workMng/selectMemoContents?memoNum=";
+		url += data.memoNum;
 		html += '<tr>';
 		html += '<td style="display: none;">' + data.memoNum + '</td>';
 		/* html += '<td>' + data.memoCreatDt + '</td>'; */
-		html += '<td>' + data.memoSubject + '</td>';
+		html += '<td> <a href="'+url +'">' + data.memoSubject + '</td> </a>';
 		html += '<td style="min-width: 40px;"><input type="button" value="삭제" class="deleteBtn" id="deleteMemoBtn"></td>';
 		html += "</tr>";
 	}
@@ -235,7 +250,11 @@ function selectList(){
 	// list 출력 
 	var url3 ="<%=cp%>/workMng/selectList";
 	ajaxJSON(url3,"post", "L");
-} 
+}; 
+
+function fcNumberFormat(value){
+	return value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+};
 
 /* let ul = document.querySelector('ul');
 const checkClick = (i) => {
@@ -295,17 +314,21 @@ for(let i = 0; i < ul.childElementCount; i++){
 			     <span class="leftPadding">  WEATHER </span>
 			   <div id="apiDivIcon">
 			   </div>
-			   <p id="tmperature" style="color: #FAD82C; padding-top: 15px;"> </p> 
-			   <p id="rain" style="color: #399DCC"> </p> 
-			   <p id="wMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
+			   <div id="tmpArea" class="tmpArea">
+				   <p id="tmperature" style="color: #FAD82C; padding-top: 15px;"> </p> 
+				   <p id="rain" style="color: #399DCC"> </p> 
+				   <p id="wMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
+			   </div>
 			</li>
 		</ul>
 		<ul>
 			<li class="boardTitle">	
 			     <span class="leftPadding">  COVID-19	</span>
 				     <img src='<%=cp%>/resource/images/covid.png' style="width: 70px; padding: 15px 80px;">
+			    <div id="tmpArea" class="tmpArea">
 			   	  <p id="covidInfo" style="color: red; padding-top: 15px;"></p> <span id="todayCount" style="font-size: 15px; font-weight: 700; color: red;"></span>
 				  <p id="cMsg" style="font-family: 'Nanum Barun Gothic', sans-serif;"> </p>
+				</div>
 			</li>
 		</ul>
 	</div>

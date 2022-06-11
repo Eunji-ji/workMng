@@ -46,7 +46,7 @@ $(function(){
 
 <div class="body-container" style="width: 700px;">
     <div class="body-title">
-        <h3><i class="far fa-clipboard"></i> TO DO LIST </h3>
+        <h3><i class="far fa-clipboard"></i> MEMO </h3>
     </div>
     
     <div>
@@ -57,7 +57,7 @@ $(function(){
 					  <tr align="left" height="40" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"> 
 					      <td width="100" bgcolor="#eeeeee" style="text-align: center;">제&nbsp;&nbsp;&nbsp;&nbsp;목</td>
 					      <td style="padding-left:10px;"> 
-					        <input type="text" name="memoSubject" maxlength="100" class="boxTF" style="width: 95%;" value="${dto.subject}">
+					        ${dto.memoSubject}
 					      </td>
 					  </tr>
 	
@@ -70,21 +70,11 @@ $(function(){
 					  <tr style="border-bottom: 1px solid #cccccc;"> 
 					      <td width="100" bgcolor="#eeeeee" style="padding-top:5px; text-align: center;" valign="top">내&nbsp;&nbsp;&nbsp;용</td>
 					      <td valign="top" style="padding:5px 0px 5px 10px;" align="left"> 
-					        <textarea name="memoContent" id="content" cols="72" class="boxTA" style="width:97%; height: 70px;"></textarea>
+					        ${dto.memoContent}
 					      </td>
 					  </tr>
 
 	              </tbody>
-			  </table>
-			
-			  <table style="width: 100%; margin: 0px auto; border-spacing: 0px;">
-			     <tr height="45"> 
-			      <td align="center" >
-			        <button type="button" class="btn" onclick="sendOk();">등록하기</button>
-			        <button type="reset" class="btn">다시입력</button>
-			        <button type="button" class="btn" onclick="javascript:location.href='<%=cp%>/workMng/dashboard';">등록취소</button>
-			      </td>
-			    </tr>
 			  </table>
 			</form>
     </div>

@@ -18,8 +18,10 @@ public interface WorkMngService {
 	// plan 삭제 
 	public void deletePlan(int todoNum) throws Exception;
 
-	// memo 조회
+	// memo 리스트 조회
 	public List<WorkMng> selectMemoList(String userId);
+	// memo 작성글 조회
+	public WorkMng selectMemoContent(int memoNum);
 	// memo 등록 
 	public void insertMemo(WorkMng dto) throws Exception;
 	// memo 삭제 

@@ -1,6 +1,7 @@
 package com.sp.workMng;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -157,4 +158,19 @@ public class WorkMngServiceImpl implements WorkMngService{
 		}		
 	}
 
+	/**
+	 * memo 내용조회
+	 * @param : memoNum
+	 * @return : dto
+	 **/	
+	@Override
+	public WorkMng selectMemoContent(int memoNum) {
+		WorkMng memo = null;
+		try {
+			memo = dao.selectOne("dashboard.selectMemoContent", memoNum);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return memo;
+	}
 }

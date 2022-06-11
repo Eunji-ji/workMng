@@ -87,6 +87,15 @@
 		)
 		WHERE ROWNUM &lt;= 5
 	</select>
+	
+	<select id="selectMemoContent" parameterType="map" resultType="com.sp.workMng.WorkMng">
+		    SELECT  
+		          memonum AS memoNum
+		        , subject AS memoSubject 
+		        , content AS memoContent 
+		    from MEMO
+		    WHERE memoNum = #{memoNum}
+	</select>
 
 	<insert id="insertMemo" parameterType="com.sp.workMng.WorkMng">
 		INSERT INTO MEMO (
@@ -105,4 +114,5 @@
 		DELETE FROM MEMO 
 		WHERE MEMONUM = #{memoNum} 
 	</delete>
+	
 </mapper>

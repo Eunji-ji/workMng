@@ -73,7 +73,7 @@ public class WorkMngController {
         }
 
         if(divCd.equals("B")) {
-        	cal.add(Calendar.DATE,-2);
+        	cal.add(Calendar.DATE,-3);
         }
         String day = sdf.format(cal.getTime());
         return day;
@@ -130,7 +130,7 @@ public class WorkMngController {
 		}
 		return nList;
 	}
-	
+
 	// 코로나 정보 API parsing, return
 	@RequestMapping(value="getCovidData", method=RequestMethod.POST)
 	@ResponseBody
@@ -381,5 +381,17 @@ public class WorkMngController {
 			HttpSession session
 			) throws Exception {
 		return ".workMng.createMemoList";
+	}
+	
+	// 메모 내용 조회 화면 호출 
+	@RequestMapping(value="selectMemoContents", method=RequestMethod.GET)
+	public String selectMemoContents(
+			Model model,
+			@RequestParam int memoNum
+			) throws Exception {
+		
+		WorkMng dto = workMngService.selectMemoContent(memoNum);
+		model.addAttribute("dto", dto);
+		return ".workMng.memoView";
 	}
 }
